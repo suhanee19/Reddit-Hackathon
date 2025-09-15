@@ -1,1 +1,1 @@
-# Moddit-Mod-Your-Subreddit
+# Reddit Hackathon
