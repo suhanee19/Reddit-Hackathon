@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Moddit: Mod a Subreddit</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #1a1a1a;
+      color: #eee;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .card {
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #ff4500;
+      margin-bottom: 14px;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      transition: transform 0.2s, background 0.2s;
+    }
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: scale(0.95); }
+
+    .pill {
+      padding: 10px 24px;
+      background: #ff4500;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 999px;
+    }
+    .pill:hover { background: #e63e00; }
+
+    .header {
+      background: #ff4500;
+      color: white;
+      padding: 12px;
+      font-weight: bold;
+      border-radius: 12px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px;
+    }
+
+    .left { display: flex; flex-direction: column; gap: 14px; }
+    .right { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+
+    .circle {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: #444;
+      color: white;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .circle:hover { background: #555; }
+
+    .stats { display: flex; gap: 10px; flex-wrap: wrap; }
+    .stat-bubble {
+      background: #333;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+
+    .stat-up { animation: pulseGreen 0.5s; }
+    .stat-down { animation: pulseRed 0.5s; }
+    @keyframes pulseGreen { 0% { background: #2d6a4f; } 100% { background: #333; } }
+    @keyframes pulseRed { 0% { background: #9d0208; } 100% { background: #333; } }
+
+    .event-card {
+      background: #222;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      min-height: 60px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .choices { display: flex; flex-direction: column; gap: 10px; }
+    .choices button {
+      padding: 10px;
+      background: #9d4edd;
+      color: white;
+      font-size: 15px;
+    }
+    .choices button:hover { background: #7b2cbf; }
+
+    .bottom { display: flex; justify-content: center; gap: 14px; margin-top: 18px; }
+    .game-over { margin-top: 20px; font-size: 18px; font-weight: bold; color: #ff4d6d; }
+  </style>
+</head>
+<body>
+
+  <!-- Starter Page -->
+  <div id="starter" class="card fade-in">
+    <h1>📰 Moddit: Mod a Subreddit</h1>
+    <h2>How to Play</h2>
+    <p>👥 <b>Users</b>: Your subreddit’s community size.</p>
+    <p>⬆️ <b>Karma</b>: How well your subreddit is liked.</p>
+    <p>🔥 <b>Chaos</b>: Too high = drama, too low = dead community.</p>
+    <br>
+    <p><b>Game Over if:</b></p>
+    <ul style="text-align:left; display:inline-block;">
+      <li>Users &lt; 30</li>
+      <li>Karma &lt; 30</li>
+      <li>Chaos &gt; 75</li>
+      <li>Chaos &lt; 25</li>
+    </ul>
+    <br>
+    <p>👉 Each day, random events happen. Choose wisely to balance Users, Karma, and Chaos!</p>
+    <button class="pill" onclick="startGame()">▶️ Start Game</button>
+  </div>
+
+  <!-- Game Page -->
+  <div id="game" class="fade-in" style="display:none;">
+    <div class="header">📰 Moddit: Mod a Subreddit</div>
+
+    <div class="layout card">
+      <div class="left">
+        <div id="stats" class="stats">
+          <span class="stat-bubble">📅 Day <span id="day">1</span></span>
+          <span class="stat-bubble">👥 <span id="users">50</span></span>
+          <span class="stat-bubble">⬆️ <span id="karma">50</span></span>
+          <span class="stat-bubble">🔥 <span id="chaos">50</span></span>
+        </div>
+        <div id="event" class="event-card">Click "Next Day" to start!</div>
+        <div class="choices" id="choices"></div>
+      </div>
+      <div class="right">
+        <button class="circle">❓</button>
+        <button class="circle">⚡</button>
+        <button class="circle">⭐</button>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <button class="pill" id="nextDay">Next Day ▶️</button>
+      <button class="pill" id="restart">🔄 Restart</button>
+    </div>
+    <div id="gameOver" class="game-over"></div>
+  </div>
+
+  <script>
+    let state = { users:50, karma: 50, chaos: 50, day: 1 };
+    let isGameOver = false;
+
+    const usersEl = document.getElementById("users");
+    const karmaEl = document.getElementById("karma");
+    const chaosEl = document.getElementById("chaos");
+    const dayEl = document.getElementById("day");
+    const eventEl = document.getElementById("event");
+    const choicesEl = document.getElementById("choices");
+    const gameOverEl = document.getElementById("gameOver");
+
+    const events = [
+        
+  {
+    text: "Spam bots are flooding posts 🤖",
+    options: [
+      { label: "Remove 🚫", effect: { karma: +5, chaos: -2 } },
+      { label: "Ban 🔨", effect: { users: -5, karma: +3 } },
+      { label: "Ignore 🤷", effect: { chaos: +7 } },
+    ],
+  },
+  {
+    text: "A wholesome meme goes viral 📈",
+    options: [
+      { label: "Promote ⭐", effect: { users: +15, karma: +10 } },
+      { label: "Pin 📌", effect: { karma: +8 } },
+      { label: "Ignore 🙄", effect: { chaos: +3 } },
+    ],
+  },
+  {
+    text: "Heated argument breaks out 🔥",
+    options: [
+      { label: "Lock thread 🔒", effect: { chaos: -7, karma: +3 } },
+      { label: "Let it flow 💬", effect: { users: +5, chaos: +8 } },
+      { label: "Ban both ⚔", effect: { users: -4, karma: +2 } },
+    ],
+  },
+  {
+    text: "Someone posts a fake news article 📰",
+    options: [
+      { label: "Remove immediately 🚨", effect: { karma: +5, chaos: -4 } },
+      { label: "Fact check 🕵️", effect: { karma: +8, users: +3 } },
+      { label: "Ignore 🙈", effect: { chaos: +10 } },
+    ],
+  },
+  {
+    text: "A celebrity AMA (Ask Me Anything) starts 🌟",
+    options: [
+      { label: "Feature on top 🎤", effect: { users: +20, karma: +15 } },
+      { label: "Let it be 👌", effect: { karma: +5 } },
+      { label: "Remove spam replies 🚫", effect: { chaos: -6, karma: +4 } },
+    ],
+  },
+  {
+    text: "Mods are accused of bias 😬",
+    options: [
+      { label: "Post transparency report 📊", effect: { karma: +10, chaos: -5 } },
+      { label: "Ignore the drama 🤷", effect: { chaos: +8 } },
+      { label: "Ban complainers 🔨", effect: { users: -8, chaos: -2 } },
+    ],
+  },
+  {
+    text: "Subreddit gets featured on Reddit’s front page 🚀",
+    options: [
+      { label: "Celebrate 🎉", effect: { users: +30, karma: +20 } },
+      { label: "Post rules reminder 📜", effect: { chaos: -5 } },
+      { label: "Do nothing 😶", effect: { chaos: +5 } },
+    ],
+  },
+  {
+    text: "A creative contest is suggested 🎨",
+    options: [
+      { label: "Host contest 🏆", effect: { users: +12, karma: +10 } },
+      { label: "Say no 🙅", effect: { karma: -3 } },
+      { label: "Ignore 🤔", effect: { chaos: +4 } },
+    ],
+  },
+  {
+    text: "Someone leaks private info (doxxing) 🚫",
+    options: [
+      { label: "Delete + Ban 🚷", effect: { chaos: -10, karma: +7 } },
+      { label: "Warn community ⚠️", effect: { karma: +5 } },
+      { label: "Do nothing 😐", effect: { chaos: +12 } },
+    ],
+  },
+  {
+    text: "Users demand new flairs 🎨",
+    options: [
+      { label: "Add flairs 🏷️", effect: { karma: +6, users: +4 } },
+      { label: "Delay the update ⏳", effect: { chaos: +3 } },
+      { label: "Refuse ❌", effect: { karma: -5 } },
+    ],
+  },
+
+      {
+        text: "Spam bots flood posts 🤖",
+        options: [
+          { label: "Remove 🚫", effect: { karma: +3, chaos: -2 } },
+          { label: "Ban 🔨", effect: { users: -12, karma: +2 } },
+          { label: "Ignore 🤷", effect: { chaos: +12, karma: -5 } },
+        ],
+      },
+      {
+        text: "A wholesome meme goes viral 📈",
+        options: [
+          { label: "Promote ⭐", effect: { users: +10, karma: +5, chaos: +2 } },
+          { label: "Pin 📌", effect: { karma: +4 } },
+          { label: "Ignore 🙄", effect: { chaos: +6, users: -3 } },
+        ],
+      },
+      {
+        text: "Heated argument breaks out 🔥",
+        options: [
+          { label: "Lock thread 🔒", effect: { chaos: -6, karma: +2 } },
+          { label: "Let it flow 💬", effect: { users: +6, chaos: +14, karma: -6 } },
+          { label: "Ban both ⚔️", effect: { users: -8, karma: +3, chaos: -3 } },
+        ],
+      },
+    ];
+
+    function updateStat(el, oldVal, newVal) {
+      el.textContent = newVal;
+      const bubble = el.parentElement;
+      if (newVal > oldVal) {
+        bubble.classList.add("stat-up");
+        setTimeout(() => bubble.classList.remove("stat-up"), 500);
+      } else if (newVal < oldVal) {
+        bubble.classList.add("stat-down");
+        setTimeout(() => bubble.classList.remove("stat-down"), 500);
+      }
+    }
+
+    function showEvent() {
+      const ev = events[Math.floor(Math.random() * events.length)];
+      eventEl.textContent = ev.text;
+      choicesEl.innerHTML = "";
+      ev.options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.textContent = opt.label;
+        btn.onclick = () => applyEffect(opt.effect);
+        choicesEl.appendChild(btn);
+      });
+    }
+
+    function applyEffect(effect) {
+      const oldState = { ...state };
+      for (let key in effect) {
+        state[key] += effect[key];
+      }
+      state.day++;
+      updateStats(oldState);
+      checkGameOver();
+      if (!isGameOver) showEvent();
+    }
+
+    function updateStats(old) {
+      updateStat(usersEl, old.users, state.users);
+      updateStat(karmaEl, old.karma, state.karma);
+      updateStat(chaosEl, old.chaos, state.chaos);
+      updateStat(dayEl, old.day, state.day);
+    }
+
+    function checkGameOver() {
+      if (
+        state.karma < 30 ||
+        state.users < 30 ||
+        state.chaos > 75 ||
+        state.chaos < 25
+      ) {
+        isGameOver = true;
+        eventEl.textContent = "💀 Game Over!";
+        choicesEl.innerHTML = "";
+        document.getElementById("nextDay").disabled = true;
+        gameOverEl.textContent =
+          `Final Stats → Day ${state.day} | 👥 ${state.users} | ⬆️ ${state.karma} | 🔥 ${state.chaos}`;
+      }
+    }
+
+    document.getElementById("nextDay").onclick = () => {
+      if (!isGameOver) {
+        state.day++;
+        updateStats({ ...state, day: state.day - 1 });
+        showEvent();
+      }
+    };
+
+    document.getElementById("restart").onclick = () => {
+      state = { users: 100, karma: 100, chaos: 50, day: 1 };
+      isGameOver = false;
+      updateStats({ users: 100, karma: 100, chaos: 50, day: 1 });
+      eventEl.textContent = "Click \"Next Day\" to start!";
+      choicesEl.innerHTML = "";
+      gameOverEl.textContent = "";
+      document.getElementById("nextDay").disabled = false;
+    };
+
+    function startGame() {
+      document.getElementById("starter").style.display = "none";
+      document.getElementById("game").style.display = "block";
+    }
+  </script>
+</body>
+</html>
